@@ -268,7 +268,7 @@ function PhotoSelector() {
       );
       console.log(response);
       if (response) {
-        setUrlEndpoint(`http://localhost:5173?id=${response.data._id}`);
+        setUrlEndpoint(`https://longmon-foto-jwj6.vercel.app?id=${response.data._id}`);
       }
       getData();
     } catch (error) {
