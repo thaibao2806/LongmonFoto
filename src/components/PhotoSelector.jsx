@@ -64,7 +64,11 @@ function PhotoSelector() {
     },
   ];
   const getlink = async (id) => {
-    let res = await axios.get(`http://localhost:3000/api/links/${id}`);
+    let res = await axios.get(` https://019e-1-53-74-230.ngrok-free.app/api/links/${id}`, {
+      headers: {
+          "ngrok-skip-browser-warning": "69420"
+      }
+  });
     if (res) {
       setDriveLink(res.data.url);
       setUsername(res.data.name);
@@ -72,7 +76,11 @@ function PhotoSelector() {
   };
 
   const getData = async () => {
-    let res = await axios.get(`http://localhost:3000/api/links`);
+    let res = await axios.get(` https://019e-1-53-74-230.ngrok-free.app/api/links`, {
+      headers: {
+          "ngrok-skip-browser-warning": "69420"
+      }
+  });
     if (res) {
       let arr = res.data.map((item, index) => ({
         key: item._id, // Use unique id as key
@@ -87,7 +95,11 @@ function PhotoSelector() {
 
   const handleDelete = async (key) => {
     try {
-      await axios.delete(`http://localhost:3000/api/links/${key}`);
+      await axios.delete(` https://019e-1-53-74-230.ngrok-free.app/api/links/${key}`, {
+        headers: {
+            "ngrok-skip-browser-warning": "69420"
+        }
+    });
       setData(data.filter((item) => item.key !== key));
       notification.success({
         message: "Success",
@@ -251,7 +263,7 @@ function PhotoSelector() {
 
     try {
       let response = await axios.post(
-        "http://localhost:3000/api/links",
+        " https://019e-1-53-74-230.ngrok-free.app/api/links",
         request
       );
       console.log(response);
