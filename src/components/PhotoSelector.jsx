@@ -64,11 +64,14 @@ function PhotoSelector() {
     },
   ];
   const getlink = async (id) => {
-    let res = await axios.get(` https://019e-1-53-74-230.ngrok-free.app/api/links/${id}`, {
-      headers: {
-          "ngrok-skip-browser-warning": "69420"
+    let res = await axios.get(
+      ` https://019e-1-53-74-230.ngrok-free.app/api/links/${id}`,
+      {
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
       }
-  });
+    );
     if (res) {
       setDriveLink(res.data.url);
       setUsername(res.data.name);
@@ -76,11 +79,14 @@ function PhotoSelector() {
   };
 
   const getData = async () => {
-    let res = await axios.get(` https://019e-1-53-74-230.ngrok-free.app/api/links`, {
-      headers: {
-          "ngrok-skip-browser-warning": "69420"
+    let res = await axios.get(
+      ` https://019e-1-53-74-230.ngrok-free.app/api/links`,
+      {
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
       }
-  });
+    );
     if (res) {
       let arr = res.data.map((item, index) => ({
         key: item._id, // Use unique id as key
@@ -95,11 +101,14 @@ function PhotoSelector() {
 
   const handleDelete = async (key) => {
     try {
-      await axios.delete(` https://019e-1-53-74-230.ngrok-free.app/api/links/${key}`, {
-        headers: {
-            "ngrok-skip-browser-warning": "69420"
+      await axios.delete(
+        ` https://019e-1-53-74-230.ngrok-free.app/api/links/${key}`,
+        {
+          headers: {
+            "ngrok-skip-browser-warning": "69420",
+          },
         }
-    });
+      );
       setData(data.filter((item) => item.key !== key));
       notification.success({
         message: "Success",
@@ -177,32 +186,44 @@ function PhotoSelector() {
   const fetchImages = async () => {
     try {
       const folderId = driveLink.match(/[-\w]{25,}/)[0];
-      const response = await window.gapi.client.drive?.files.list({
-        q: `'${folderId}' in parents and mimeType contains 'image/'`,
-        fields:
-          "files(id, name, mimeType, thumbnailLink, webContentLink, webViewLink)",
-      });
+      let imageUrls = [];
+      let pageToken = null;
 
-      console.log("API Response:", response);
-
-      if (response.result && response.result.files) {
-        const files = response.result.files;
-        const imageUrls = files.map((file) => {
-          const urlPreview =  `https://drive.google.com/file/d/${file.id}/preview`;
-          const url = file.thumbnailLink
-          return {
-            id: file.id,
-            name: file.name,
-            type: file.mimeType,
-            url,
-            urlPreview,
-            view: file.webViewLink,
-          };
+      do {
+        const response = await window.gapi.client.drive.files.list({
+          q: `'${folderId}' in parents and mimeType contains 'image/'`,
+          fields:
+            "nextPageToken, files(id, name, mimeType, thumbnailLink, webContentLink, webViewLink)",
+          pageSize: 100,
+          pageToken: pageToken,
         });
-        setImageLinks(imageUrls);
-      } else {
-        console.error("Unexpected API response format:", response.result);
-      }
+
+        console.log("API Response:", response);
+
+        if (response.result && response.result.files) {
+          const files = response.result.files;
+          const newImageUrls = files.map((file) => {
+            const urlPreview = `https://drive.google.com/file/d/${file.id}/preview`;
+            const url = file.thumbnailLink;
+            return {
+              id: file.id,
+              name: file.name,
+              type: file.mimeType,
+              url,
+              urlPreview,
+              view: file.webViewLink,
+            };
+          });
+
+          imageUrls = imageUrls.concat(newImageUrls);
+          pageToken = response.result.nextPageToken;
+        } else {
+          console.error("Unexpected API response format:", response.result);
+          break;
+        }
+      } while (pageToken);
+
+      setImageLinks(imageUrls);
     } catch (error) {
       console.error("Error fetching images:", error);
     }
@@ -268,7 +289,9 @@ function PhotoSelector() {
       );
       console.log(response);
       if (response) {
-        setUrlEndpoint(`https://longmon-foto-jwj6.vercel.app?id=${response.data._id}`);
+        setUrlEndpoint(
+          `https://longmon-foto-jwj6.vercel.app?id=${response.data._id}`
+        );
       }
       getData();
     } catch (error) {
@@ -316,7 +339,10 @@ function PhotoSelector() {
             }}
             //onClick={() => setIsModalVisible(true)}
           >
-            <a href="https://docs.google.com/spreadsheets/d/11s0v_PdsudmGW8TtFulm-tNFDfAUDVw8Mrm6lTnuM4I/edit?gid=0#gid=0" target="_blank">
+            <a
+              href="https://docs.google.com/spreadsheets/d/11s0v_PdsudmGW8TtFulm-tNFDfAUDVw8Mrm6lTnuM4I/edit?gid=0#gid=0"
+              target="_blank"
+            >
               View file
             </a>
           </Button>
@@ -335,32 +361,32 @@ function PhotoSelector() {
           >
             {imageLinks.map((image, index) => (
               <>
-              <Card
-                key={index}
-                hoverable
-                style={{ width: 240, margin: "10px" }}
-                cover={
-                  <img
-                    alt={`img-${index}`}
-                    src={image.url}
-                    //width="640" height="480" allow="autoplay"
-                    onClick={() => handleImageClick(image.urlPreview)}
-                  ></img>
-                }
-              >
-                <Meta title={image.name} />
-                <Button
-                  type="primary"
-                  icon={<InfoCircleOutlined />}
-                  style={{ marginTop: "10px" }}
-                  onClick={() => handleSelectClick(image)}
-                  disabled={selectedImages.some((img) => img.id === image.id)}
+                <Card
+                  key={index}
+                  hoverable
+                  style={{ width: 240, margin: "10px" }}
+                  cover={
+                    <img
+                      alt={`img-${index}`}
+                      src={image.url}
+                      //width="640" height="480" allow="autoplay"
+                      onClick={() => handleImageClick(image.urlPreview)}
+                    ></img>
+                  }
                 >
-                  {selectedImages.some((img) => img.id === image.id)
-                    ? "Selected"
-                    : "Select"}
-                </Button>
-              </Card>
+                  <Meta title={image.name} />
+                  <Button
+                    type="primary"
+                    icon={<InfoCircleOutlined />}
+                    style={{ marginTop: "10px" }}
+                    onClick={() => handleSelectClick(image)}
+                    disabled={selectedImages.some((img) => img.id === image.id)}
+                  >
+                    {selectedImages.some((img) => img.id === image.id)
+                      ? "Selected"
+                      : "Select"}
+                  </Button>
+                </Card>
               </>
             ))}
           </div>
@@ -371,7 +397,14 @@ function PhotoSelector() {
               footer={null}
               onCancel={handleModalClose}
             >
-              <iframe alt="preview" width="640" height="480" allow="autoplay" style={{ width: "100%" }} src={previewImage} ></iframe>
+              <iframe
+                alt="preview"
+                width="640"
+                height="480"
+                allow="autoplay"
+                style={{ width: "100%" }}
+                src={previewImage}
+              ></iframe>
             </Modal>
           )}
         </>
