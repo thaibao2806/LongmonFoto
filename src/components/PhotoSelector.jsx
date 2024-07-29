@@ -1,10 +1,20 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
-import { Modal, Input, Button, notification, Card, message, Table } from "antd";
+import {
+  Modal,
+  Input,
+  Button,
+  notification,
+  Card,
+  message,
+  Table,
+  Badge,
+} from "antd";
 import {
   InfoCircleOutlined,
   CopyOutlined,
   DeleteOutlined,
+  ShoppingCartOutlined,
 } from "@ant-design/icons";
 
 const { Meta } = Card;
@@ -19,6 +29,19 @@ function PhotoSelector() {
   const [urlEnpoint, setUrlEndpoint] = useState("");
   const [id, setId] = useState("");
   const [data, setData] = useState(null);
+  const [previewImageIndex, setPreviewImageIndex] = useState(0);
+  const [newSelect, setNewSelect] = useState([]);
+  const [isModalVisibleCart, setIsModalVisibleCart] = useState(false);
+  const [cartModalVisible, setCartModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const showCartModal = () => {
+    setCartModalVisible(true);
+  };
+
+  const handleCartCancel = () => {
+    setCartModalVisible(false);
+  };
 
   const column = [
     {
@@ -64,14 +87,11 @@ function PhotoSelector() {
     },
   ];
   const getlink = async (id) => {
-    let res = await axios.get(
-      ` https://019e-1-53-74-230.ngrok-free.app/api/links/${id}`,
-      {
-        headers: {
-          "ngrok-skip-browser-warning": "69420",
-        },
-      }
-    );
+    let res = await axios.get(`http://localhost:3000/api/links/${id}`, {
+      headers: {
+        "ngrok-skip-browser-warning": "69420",
+      },
+    });
     if (res) {
       setDriveLink(res.data.url);
       setUsername(res.data.name);
@@ -79,21 +99,18 @@ function PhotoSelector() {
   };
 
   const getData = async () => {
-    let res = await axios.get(
-      ` https://019e-1-53-74-230.ngrok-free.app/api/links`,
-      {
-        headers: {
-          "ngrok-skip-browser-warning": "69420",
-        },
-      }
-    );
+    let res = await axios.get(`http://localhost:3000/api/links`, {
+      headers: {
+        "ngrok-skip-browser-warning": "69420",
+      },
+    });
     if (res) {
       let arr = res.data.map((item, index) => ({
         key: item._id, // Use unique id as key
         name: item.name,
         url: item.url,
         createDate: item.createdAt,
-        linkCustomer: `http://localhost:5173?id=${item._id}`,
+        linkCustomer: `https://longmon-foto-jwj6.vercel.app?id=${item._id}`,
       }));
       setData(arr);
     }
@@ -101,14 +118,11 @@ function PhotoSelector() {
 
   const handleDelete = async (key) => {
     try {
-      await axios.delete(
-        ` https://019e-1-53-74-230.ngrok-free.app/api/links/${key}`,
-        {
-          headers: {
-            "ngrok-skip-browser-warning": "69420",
-          },
-        }
-      );
+      await axios.delete(`http://localhost:3000/api/links/${key}`, {
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
+      });
       setData(data.filter((item) => item.key !== key));
       notification.success({
         message: "Success",
@@ -204,7 +218,8 @@ function PhotoSelector() {
           const files = response.result.files;
           const newImageUrls = files.map((file) => {
             const urlPreview = `https://drive.google.com/file/d/${file.id}/preview`;
-            const url = file.thumbnailLink;
+            const url = `https://drive.google.com/thumbnail?id=${file.id}`;
+            console.log(url);
             return {
               id: file.id,
               name: file.name,
@@ -233,7 +248,7 @@ function PhotoSelector() {
     try {
       const values = [
         {
-          name: image.name,
+          name: image.name.split(".")[0],
           timestamp: new Date().toLocaleString(),
           username: username,
         },
@@ -284,14 +299,12 @@ function PhotoSelector() {
 
     try {
       let response = await axios.post(
-        " https://019e-1-53-74-230.ngrok-free.app/api/links",
+        "http://localhost:3000/api/links",
         request
       );
       console.log(response);
       if (response) {
-        setUrlEndpoint(
-          `https://longmon-foto-jwj6.vercel.app?id=${response.data._id}`
-        );
+        setUrlEndpoint(`https://longmon-foto-jwj6.vercel.app?id=${response.data._id}`);
       }
       getData();
     } catch (error) {
@@ -315,6 +328,73 @@ function PhotoSelector() {
     setUsername("");
     setDriveLink("");
     setIsModalVisible(false);
+  };
+
+  // Function to navigate to next image
+  const handleNext = () => {
+    if (previewImageIndex < imageLinks.length - 1) {
+      const nextIndex = previewImageIndex + 1;
+      setPreviewImage(imageLinks[nextIndex].urlPreview);
+      setPreviewImageIndex(nextIndex);
+    }
+  };
+
+  // Function to navigate to previous image
+  const handlePrev = () => {
+    if (previewImageIndex > 0) {
+      const prevIndex = previewImageIndex - 1;
+      console.log(prevIndex);
+      setPreviewImage(imageLinks[prevIndex].urlPreview);
+      setPreviewImageIndex(prevIndex);
+    }
+  };
+
+  const handleSelect = () => {
+    console.log(previewImageIndex)
+    if (previewImageIndex !== null) {
+      setNewSelect((prevSelect) => [
+        ...prevSelect,
+        { ...imageLinks[previewImageIndex], urlPreview: previewImage },
+      ]);
+    }
+  };
+
+  const handleDeleteCart = (id) => {
+    setNewSelect(newSelect.filter((image) => image.id !== id));
+  };
+
+  const handleSendForLong = async () => {
+    setLoading(true);
+    try {
+      await Promise.all(newSelect.map(async (item) => {
+        const values = [
+          {
+            name: item.name.split(".")[0],
+            timestamp: new Date().toLocaleString(),
+            username: username,
+          },
+        ];
+        const response = await axios.post(
+          "https://sheet.best/api/sheets/7d77aab1-040e-4728-b907-694614e8befd",
+          values
+        );
+        if (response.status === 200) {
+          notification.success({
+            message: "Success",
+            description: `Image "${item.name}" has been successfully logged.`,
+          });
+        }
+      }));
+      setNewSelect([]); // Clear selected images after successful API call
+    } catch (error) {
+      console.error("Error logging to sheet:", error);
+      notification.error({
+        message: "Error",
+        description: `Failed to log images.`,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -351,6 +431,16 @@ function PhotoSelector() {
         </>
       ) : (
         <>
+          <Badge count={newSelect.length} offset={[10, 10]}>
+            <Button
+              type="primary"
+              icon={<ShoppingCartOutlined />}
+              style={{ marginLeft: "10px", marginBottom: "10px" }}
+              onClick={showCartModal}
+            >
+              Ảnh đã chọn
+            </Button>
+          </Badge>
           <div
             style={{
               display: "flex",
@@ -359,12 +449,65 @@ function PhotoSelector() {
               justifyContent: "center",
             }}
           >
+            <Modal
+              title="Longmon Foto"
+              visible={cartModalVisible}
+              onCancel={handleCartCancel}
+              bodyStyle={{ padding: 0, height: "80vh", overflow:"auto" }} // Remove padding and set height to 100% viewport height
+              style={{ top: 0 }} // Align modal to the top
+              width="50%" // Set width to 100%
+              centered={false} // Remove centering to align with the top
+              destroyOnClose={true}
+              footer={[
+                <Button
+                  key="checkout"
+                  type="primary"
+                  loading={loading}
+                  onClick={handleSendForLong}
+                >
+                  Gửi cho Long
+                </Button>,
+                <Button key="cancel" onClick={handleCartCancel}>
+                  Huỷ
+                </Button>,
+              ]}
+            >
+              <div>
+                {newSelect.length === 0 ? (
+                  <p>No images selected.</p>
+                ) : (
+                  newSelect.map((image, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      <img
+                        src={image.url}
+                        alt={image.name}
+                        style={{ width: "200px", marginRight: "10px" }}
+                      />
+                      <p style={{ flex: 1 }}>{image.name}</p>
+                      <Button
+                        type="danger"
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleDeleteCart(image.id)}
+                        style={{ color: "red" }}
+                      ></Button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </Modal>
             {imageLinks.map((image, index) => (
               <>
                 <Card
                   key={index}
                   hoverable
-                  style={{ width: 240, margin: "10px" }}
+                  style={{ width: 160, margin: "10px" }}
                   cover={
                     <img
                       alt={`img-${index}`}
@@ -396,15 +539,55 @@ function PhotoSelector() {
               visible={!!previewImage}
               footer={null}
               onCancel={handleModalClose}
+              bodyStyle={{ padding: 0, height: "90vh" }} // Remove padding and set height to 100% viewport height
+              style={{ top: 0 }} // Align modal to the top
+              width="100%" // Set width to 100%
+              centered={false} // Remove centering to align with the top
+              destroyOnClose={true} // Destroy modal on close to reset state
+              footer={[
+                <Button onClick={handlePrev} disabled={previewImageIndex === 0}>
+                  Previous
+                </Button>,
+                <Button
+                  onClick={handleNext}
+                  disabled={previewImageIndex === imageLinks.length - 1}
+                >
+                  Next
+                </Button>,
+                <Button
+                  type="primary"
+                  onClick={handleSelect}
+                  disabled={newSelect.some(
+                    (img) => img.urlPreview === previewImage
+                  )}
+                >
+                  {newSelect.some((img) => img.urlPreview === previewImage)
+                    ? "Selected"
+                    : "Select"}
+                </Button>,
+              ]}
             >
               <iframe
                 alt="preview"
-                width="640"
-                height="480"
+                width="99%"
+                height="50%"
                 allow="autoplay"
-                style={{ width: "100%" }}
+                style={{ border: "none", height: "90vh" }}
                 src={previewImage}
               ></iframe>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  padding: "10px",
+                  position: "absolute",
+                  bottom: 0,
+                  width: "90%",
+                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                }}
+              >
+                {/* <Button>Bỏ chọn</Button> */}
+              </div>
             </Modal>
           )}
         </>
