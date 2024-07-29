@@ -87,7 +87,7 @@ function PhotoSelector() {
     },
   ];
   const getlink = async (id) => {
-    let res = await axios.get(`http://localhost:3000/api/links/${id}`, {
+    let res = await axios.get(`https://f1de-202-78-231-138.ngrok-free.app/api/links/${id}`, {
       headers: {
         "ngrok-skip-browser-warning": "69420",
       },
@@ -99,7 +99,7 @@ function PhotoSelector() {
   };
 
   const getData = async () => {
-    let res = await axios.get(`http://localhost:3000/api/links`, {
+    let res = await axios.get(`https://f1de-202-78-231-138.ngrok-free.app/api/links`, {
       headers: {
         "ngrok-skip-browser-warning": "69420",
       },
@@ -118,7 +118,7 @@ function PhotoSelector() {
 
   const handleDelete = async (key) => {
     try {
-      await axios.delete(`http://localhost:3000/api/links/${key}`, {
+      await axios.delete(`https://f1de-202-78-231-138.ngrok-free.app/api/links/${key}`, {
         headers: {
           "ngrok-skip-browser-warning": "69420",
         },
@@ -299,7 +299,7 @@ function PhotoSelector() {
 
     try {
       let response = await axios.post(
-        "http://localhost:3000/api/links",
+        "https://f1de-202-78-231-138.ngrok-free.app/api/links",
         request
       );
       console.log(response);
