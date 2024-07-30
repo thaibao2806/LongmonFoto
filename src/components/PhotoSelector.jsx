@@ -87,11 +87,14 @@ function PhotoSelector() {
     },
   ];
   const getlink = async (id) => {
-    let res = await axios.get(`https://f1de-202-78-231-138.ngrok-free.app/api/links/${id}`, {
-      headers: {
-        "ngrok-skip-browser-warning": "69420",
-      },
-    });
+    let res = await axios.get(
+      `https://f1de-202-78-231-138.ngrok-free.app/api/links/${id}`,
+      {
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
+      }
+    );
     if (res) {
       setDriveLink(res.data.url);
       setUsername(res.data.name);
@@ -99,11 +102,14 @@ function PhotoSelector() {
   };
 
   const getData = async () => {
-    let res = await axios.get(`https://f1de-202-78-231-138.ngrok-free.app/api/links`, {
-      headers: {
-        "ngrok-skip-browser-warning": "69420",
-      },
-    });
+    let res = await axios.get(
+      `https://f1de-202-78-231-138.ngrok-free.app/api/links`,
+      {
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
+      }
+    );
     if (res) {
       let arr = res.data.map((item, index) => ({
         key: item._id, // Use unique id as key
@@ -118,11 +124,14 @@ function PhotoSelector() {
 
   const handleDelete = async (key) => {
     try {
-      await axios.delete(`https://f1de-202-78-231-138.ngrok-free.app/api/links/${key}`, {
-        headers: {
-          "ngrok-skip-browser-warning": "69420",
-        },
-      });
+      await axios.delete(
+        `https://f1de-202-78-231-138.ngrok-free.app/api/links/${key}`,
+        {
+          headers: {
+            "ngrok-skip-browser-warning": "69420",
+          },
+        }
+      );
       setData(data.filter((item) => item.key !== key));
       notification.success({
         message: "Success",
@@ -284,7 +293,11 @@ function PhotoSelector() {
   };
 
   const handleImageClick = (url) => {
-    setPreviewImage(url);
+    const index = imageLinks.findIndex((img) => img.id === url.id);
+    if (index !== -1) {
+      setPreviewImage(url);
+      setPreviewImageIndex(index);
+    }
   };
 
   const handleModalClose = () => {
@@ -304,7 +317,9 @@ function PhotoSelector() {
       );
       console.log(response);
       if (response) {
-        setUrlEndpoint(`https://longmon-foto-jwj6.vercel.app?id=${response.data._id}`);
+        setUrlEndpoint(
+          `https://longmon-foto-jwj6.vercel.app?id=${response.data._id}`
+        );
       }
       getData();
     } catch (error) {
@@ -334,7 +349,7 @@ function PhotoSelector() {
   const handleNext = () => {
     if (previewImageIndex < imageLinks.length - 1) {
       const nextIndex = previewImageIndex + 1;
-      setPreviewImage(imageLinks[nextIndex].urlPreview);
+      setPreviewImage(imageLinks[nextIndex]);
       setPreviewImageIndex(nextIndex);
     }
   };
@@ -344,18 +359,34 @@ function PhotoSelector() {
     if (previewImageIndex > 0) {
       const prevIndex = previewImageIndex - 1;
       console.log(prevIndex);
-      setPreviewImage(imageLinks[prevIndex].urlPreview);
+      setPreviewImage(imageLinks[prevIndex]);
       setPreviewImageIndex(prevIndex);
     }
   };
 
-  const handleSelect = () => {
-    console.log(previewImageIndex)
-    if (previewImageIndex !== null) {
-      setNewSelect((prevSelect) => [
-        ...prevSelect,
-        { ...imageLinks[previewImageIndex], urlPreview: previewImage },
-      ]);
+  const handleSelect = (previewImage) => {
+    if (
+      previewImageIndex !== null &&
+      previewImageIndex >= 0 &&
+      previewImageIndex < imageLinks.length
+    ) {
+      const selectedImage = imageLinks.some(
+        (img) => (img.id = previewImage.id)
+      );
+      console.log(previewImage);
+      console.log(selectedImage);
+
+      // Check if the image is already in newSelect to avoid duplicates
+      const isAlreadySelected = newSelect.some(
+        (img) => img.id === selectedImage.id
+      );
+
+      if (selectedImage) {
+        setNewSelect((prevSelect) => [
+          ...prevSelect,
+          { ...previewImage, urlPreview: previewImage.urlPreview },
+        ]);
+      }
     }
   };
 
@@ -366,25 +397,27 @@ function PhotoSelector() {
   const handleSendForLong = async () => {
     setLoading(true);
     try {
-      await Promise.all(newSelect.map(async (item) => {
-        const values = [
-          {
-            name: item.name.split(".")[0],
-            timestamp: new Date().toLocaleString(),
-            username: username,
-          },
-        ];
-        const response = await axios.post(
-          "https://sheet.best/api/sheets/7d77aab1-040e-4728-b907-694614e8befd",
-          values
-        );
-        if (response.status === 200) {
-          notification.success({
-            message: "Success",
-            description: `Image "${item.name}" has been successfully logged.`,
-          });
-        }
-      }));
+      await Promise.all(
+        newSelect.map(async (item) => {
+          const values = [
+            {
+              name: item.name.split(".")[0],
+              timestamp: new Date().toLocaleString(),
+              username: username,
+            },
+          ];
+          const response = await axios.post(
+            "https://sheet.best/api/sheets/7d77aab1-040e-4728-b907-694614e8befd",
+            values
+          );
+          if (response.status === 200) {
+            // notification.success({
+            //   message: "Success",
+            //   description: `Image "${item.name}" has been successfully logged.`,
+            // });
+          }
+        })
+      );
       setNewSelect([]); // Clear selected images after successful API call
     } catch (error) {
       console.error("Error logging to sheet:", error);
@@ -394,12 +427,16 @@ function PhotoSelector() {
       });
     } finally {
       setLoading(false);
+      notification.success({
+        message: "Success",
+        description: `Gửi thành công. Cảm ơn nhé!!`,
+      });
     }
   };
 
   return (
     <div>
-      {data && data.length > 0 && !id ? (
+      {data && data?.length > 0 && !id ? (
         <>
           <Button
             type="primary"
@@ -431,16 +468,18 @@ function PhotoSelector() {
         </>
       ) : (
         <>
+        <div style={{position:"fixed", zIndex:"1000", left: 0, top: "50px"}}>
           <Badge count={newSelect.length} offset={[10, 10]}>
             <Button
               type="primary"
               icon={<ShoppingCartOutlined />}
-              style={{ marginLeft: "10px", marginBottom: "10px" }}
+              style={{ marginLeft: "10px", marginBottom: "10px"}}
               onClick={showCartModal}
             >
               Ảnh đã chọn
             </Button>
           </Badge>
+          </div>
           <div
             style={{
               display: "flex",
@@ -453,9 +492,9 @@ function PhotoSelector() {
               title="Longmon Foto"
               visible={cartModalVisible}
               onCancel={handleCartCancel}
-              bodyStyle={{ padding: 0, height: "80vh", overflow:"auto" }} // Remove padding and set height to 100% viewport height
+              bodyStyle={{ padding: 0, height: "80vh", overflow: "auto" }} // Remove padding and set height to 100% viewport height
               style={{ top: 0 }} // Align modal to the top
-              width="50%" // Set width to 100%
+              maxwidth="100%" // Set width to 100%
               centered={false} // Remove centering to align with the top
               destroyOnClose={true}
               footer={[
@@ -489,6 +528,7 @@ function PhotoSelector() {
                         src={image.url}
                         alt={image.name}
                         style={{ width: "200px", marginRight: "10px" }}
+                        onClick={() => handleImageClick(image)}
                       />
                       <p style={{ flex: 1 }}>{image.name}</p>
                       <Button
@@ -513,7 +553,7 @@ function PhotoSelector() {
                       alt={`img-${index}`}
                       src={image.url}
                       //width="640" height="480" allow="autoplay"
-                      onClick={() => handleImageClick(image.urlPreview)}
+                      onClick={() => handleImageClick(image)}
                     ></img>
                   }
                 >
@@ -556,12 +596,14 @@ function PhotoSelector() {
                 </Button>,
                 <Button
                   type="primary"
-                  onClick={handleSelect}
+                  onClick={() => handleSelect(previewImage)}
                   disabled={newSelect.some(
-                    (img) => img.urlPreview === previewImage
+                    (img) => img.urlPreview === previewImage.urlPreview
                   )}
                 >
-                  {newSelect.some((img) => img.urlPreview === previewImage)
+                  {newSelect.some(
+                    (img) => img.urlPreview === previewImage.urlPreview
+                  )
                     ? "Selected"
                     : "Select"}
                 </Button>,
@@ -573,7 +615,7 @@ function PhotoSelector() {
                 height="50%"
                 allow="autoplay"
                 style={{ border: "none", height: "90vh" }}
-                src={previewImage}
+                src={previewImage.urlPreview}
               ></iframe>
               <div
                 style={{
