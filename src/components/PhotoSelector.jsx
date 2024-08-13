@@ -102,14 +102,11 @@ function PhotoSelector() {
   };
 
   const getData = async () => {
-    let res = await axios.get(
-      `https://be-longmonfoto.onrender.com/api/links`,
-      {
-        headers: {
-          "ngrok-skip-browser-warning": "69420",
-        },
-      }
-    );
+    let res = await axios.get(`https://be-longmonfoto.onrender.com/api/links`, {
+      headers: {
+        "ngrok-skip-browser-warning": "69420",
+      },
+    });
     if (res) {
       let arr = res.data.map((item, index) => ({
         key: item._id, // Use unique id as key
@@ -397,28 +394,25 @@ function PhotoSelector() {
   const handleSendForLong = async () => {
     setLoading(true);
     try {
-      await Promise.all(
-        newSelect.map(async (item) => {
-          const values = [
-            {
-              name: item.name.split(".")[0],
-              timestamp: new Date().toLocaleString(),
-              username: username,
-            },
-          ];
-          const response = await axios.post(
-            "https://sheet.best/api/sheets/7d77aab1-040e-4728-b907-694614e8befd",
-            values
-          );
-          if (response.status === 200) {
-            // notification.success({
-            //   message: "Success",
-            //   description: `Image "${item.name}" has been successfully logged.`,
-            // });
-          }
-        })
-      );
-      setNewSelect([]); // Clear selected images after successful API call
+      for (const item of newSelect) {
+        const values = [
+          {
+            name: item.name.split(".")[0],
+            timestamp: new Date().toLocaleString(),
+            username: username,
+          },
+        ];
+        const response = await axios.post(
+          "https://sheet.best/api/sheets/7d77aab1-040e-4728-b907-694614e8befd",
+          values
+        );
+        if (response.status === 200) {
+          // Success logic here
+        }
+        // Delay for 100 milliseconds between requests
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      setNewSelect([]);
     } catch (error) {
       console.error("Error logging to sheet:", error);
       notification.error({
@@ -468,17 +462,19 @@ function PhotoSelector() {
         </>
       ) : (
         <>
-        <div style={{position:"fixed", zIndex:"1000", left: 0, top: "50px"}}>
-          <Badge count={newSelect.length} offset={[10, 10]}>
-            <Button
-              type="primary"
-              icon={<ShoppingCartOutlined />}
-              style={{ marginLeft: "10px", marginBottom: "10px"}}
-              onClick={showCartModal}
-            >
-              Ảnh đã chọn
-            </Button>
-          </Badge>
+          <div
+            style={{ position: "fixed", zIndex: "1000", left: 0, top: "50px" }}
+          >
+            <Badge count={newSelect.length} offset={[10, 10]}>
+              <Button
+                type="primary"
+                icon={<ShoppingCartOutlined />}
+                style={{ marginLeft: "10px", marginBottom: "10px" }}
+                onClick={showCartModal}
+              >
+                Ảnh đã chọn
+              </Button>
+            </Badge>
           </div>
           <div
             style={{
