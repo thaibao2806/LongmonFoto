@@ -88,7 +88,7 @@ function PhotoSelector() {
   ];
   const getlink = async (id) => {
     let res = await axios.get(
-      `https://f1de-202-78-231-138.ngrok-free.app/api/links/${id}`,
+      `https://be-longmonfoto.onrender.com/api/links/${id}`,
       {
         headers: {
           "ngrok-skip-browser-warning": "69420",
@@ -103,7 +103,7 @@ function PhotoSelector() {
 
   const getData = async () => {
     let res = await axios.get(
-      `https://f1de-202-78-231-138.ngrok-free.app/api/links`,
+      `https://be-longmonfoto.onrender.com/api/links`,
       {
         headers: {
           "ngrok-skip-browser-warning": "69420",
@@ -125,7 +125,7 @@ function PhotoSelector() {
   const handleDelete = async (key) => {
     try {
       await axios.delete(
-        `https://f1de-202-78-231-138.ngrok-free.app/api/links/${key}`,
+        `https://be-longmonfoto.onrender.com/api/links/${key}`,
         {
           headers: {
             "ngrok-skip-browser-warning": "69420",
@@ -312,7 +312,7 @@ function PhotoSelector() {
 
     try {
       let response = await axios.post(
-        "https://f1de-202-78-231-138.ngrok-free.app/api/links",
+        "https://be-longmonfoto.onrender.com/api/links",
         request
       );
       console.log(response);
