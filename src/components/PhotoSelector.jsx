@@ -11,7 +11,7 @@ import {
   Badge,
 } from "antd";
 import {
-  InfoCircleOutlined,
+  EyeOutlined,
   CopyOutlined,
   DeleteOutlined,
   ShoppingCartOutlined,
@@ -556,14 +556,12 @@ function PhotoSelector() {
                   <Meta title={image.name} />
                   <Button
                     type="primary"
-                    icon={<InfoCircleOutlined />}
+                    icon={<EyeOutlined />}
                     style={{ marginTop: "10px" }}
-                    onClick={() => handleSelectClick(image)}
-                    disabled={selectedImages.some((img) => img.id === image.id)}
+                    onClick={() => handleImageClick(image)}
+                    //disabled={selectedImages.some((img) => img.id === image.id)}
                   >
-                    {selectedImages.some((img) => img.id === image.id)
-                      ? "Selected"
-                      : "Select"}
+                      Xem ảnh
                   </Button>
                 </Card>
               </>
