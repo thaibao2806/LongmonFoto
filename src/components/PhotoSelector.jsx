@@ -342,6 +342,29 @@ function PhotoSelector() {
     setIsModalVisible(false);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      console.log("Key pressed:", event.key);
+      if (event.key === "ArrowRight") {
+        handleNext();
+        console.log("check", event);
+      } else if (event.key === "ArrowLeft") {
+        handlePrev();
+        console.log("check prev", event);
+      } else if (event.ctrlKey && event.key === "s") {
+        event.preventDefault(); // Prevent default browser action (usually save page)
+        handleSelect(previewImage);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [previewImageIndex, imageLinks]);
+
   // Function to navigate to next image
   const handleNext = () => {
     if (previewImageIndex < imageLinks.length - 1) {
@@ -561,7 +584,7 @@ function PhotoSelector() {
                     onClick={() => handleImageClick(image)}
                     //disabled={selectedImages.some((img) => img.id === image.id)}
                   >
-                      Xem ảnh
+                    Xem ảnh
                   </Button>
                 </Card>
               </>
@@ -571,7 +594,6 @@ function PhotoSelector() {
           {previewImage && (
             <Modal
               visible={!!previewImage}
-              footer={null}
               onCancel={handleModalClose}
               bodyStyle={{ padding: 0, height: "90vh" }} // Remove padding and set height to 100% viewport height
               style={{ top: 0 }} // Align modal to the top
